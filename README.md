@@ -130,3 +130,75 @@ l'autorisation a été donnée (réglable dans Profil). Le vrai filet reste la c
 
 Si le rappel fermé devient important, il faudra passer à une app native
 (Expo / React Native) ou ajouter un petit serveur de push.
+
+---
+
+## Mettre en ligne (GitHub Pages)
+
+Le dépôt git est déjà initialisé et le premier commit est fait. Il reste trois
+étapes, toutes de ton côté.
+
+### 1. Créer le dépôt sur GitHub
+
+Sur <https://github.com/new> : nom `sensasport`, visibilité **Public** (requis
+pour GitHub Pages sur un compte gratuit). **Ne coche rien** — pas de README, pas
+de .gitignore, pas de licence : le dépôt local les contient déjà.
+
+### 2. Pousser le code
+
+```powershell
+git remote add origin https://github.com/TON_PSEUDO/sensasport.git
+git push -u origin main
+```
+
+Au premier push, Git pour Windows ouvre une fenêtre de connexion GitHub. Tu te
+connectes, et c'est retenu pour la suite.
+
+### 3. Activer Pages
+
+Sur le dépôt : **Settings → Pages**. Source : « Deploy from a branch »,
+branche `main`, dossier `/ (root)`. Enregistrer.
+
+Une à deux minutes plus tard, l'app est en ligne :
+
+```
+https://TON_PSEUDO.github.io/sensasport/
+```
+
+Ouvre cette adresse sur ton téléphone, puis « Ajouter à l'écran d'accueil ».
+Tu obtiens l'icône verte, le plein écran, et le fonctionnement hors ligne.
+
+### Publier une modification
+
+```powershell
+git add -A
+git commit -m "ce que tu as changé"
+git push
+```
+
+Le site se met à jour tout seul en une minute environ.
+
+### Trois points à connaître
+
+**Ton adresse e-mail sera visible.** Git l'inscrit dans chaque commit, et
+l'historique d'un dépôt public est consultable par tous. Pour utiliser l'adresse
+masquée que GitHub te fournit, active « Keep my email addresses private » dans
+tes réglages GitHub, puis avant de pousser :
+
+```powershell
+git config user.email "TON_ID+TON_PSEUDO@users.noreply.github.com"
+git commit --amend --reset-author --no-edit
+```
+
+**Le cahier des charges sera public** lui aussi. Pour le garder pour toi :
+
+```powershell
+git rm --cached cahier-des-charges-app-sport.md
+Add-Content .gitignore "cahier-des-charges-app-sport.md"
+git commit -m "Retire le cahier des charges du depot"
+```
+
+**Le projet est dans OneDrive.** La synchronisation peut occasionnellement
+perturber le dossier `.git`. Si tu vois des erreurs git inexpliquées, déplace le
+projet hors de OneDrive (par exemple `C:\dev\sensasport`) — GitHub servira
+alors de sauvegarde.
