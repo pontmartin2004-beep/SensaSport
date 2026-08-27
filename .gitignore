@@ -1,0 +1,13 @@
+# Résultats de compilation : régénérés par build.ps1
+dist/
+
+# Windows / OneDrive
+Thumbs.db
+desktop.ini
+*.tmp
+~$*
+
+# Éditeurs
+.vscode/
+.idea/
+*.swp

@@ -1,0 +1,132 @@
+# SensaSport — V1
+
+Application d'entraînement au poids du corps, à la sensation.
+Implémentation du [cahier des charges](cahier-des-charges-app-sport.md).
+
+C'est une **PWA sans outillage** : pas de Node, pas de build, pas de dépendance.
+Du HTML, du CSS et du JavaScript classique. Les données restent sur l'appareil
+(`localStorage`), rien n'est envoyé nulle part.
+
+---
+
+## Lancer l'app
+
+### Sur cet ordinateur
+
+```powershell
+.\serve.ps1
+```
+
+Puis ouvrir <http://127.0.0.1:8123>.
+
+### Sur ton téléphone (même Wi-Fi)
+
+```powershell
+.\serve.ps1 -Lan
+```
+
+Le script affiche l'adresse à saisir sur le téléphone (`http://192.168.x.x:8123`).
+Depuis Chrome ou Safari, « Ajouter à l'écran d'accueil » installe SensaSport
+comme une vraie app, en plein écran.
+
+`serve.ps1` est un serveur de fichiers statiques en PowerShell (socket TCP brut,
+aucun droit administrateur requis). `Ctrl+C` pour l'arrêter.
+
+> Ouvrir `index.html` directement par double-clic fonctionne aussi, mais le mode
+> hors ligne et l'installation sur l'écran d'accueil demandent `http://`.
+
+---
+
+## Structure
+
+```
+index.html              coquille + ordre de chargement des scripts
+manifest.webmanifest    installation sur l'écran d'accueil
+sw.js                   cache hors ligne
+serve.ps1               serveur local de développement
+css/app.css             design system (couleurs, composants, écrans)
+assets/                 icône de l'app
+js/
+  config.js         circuits, textes, constantes — tout ce qui vient du CDC
+  util.js           dates en jours calendaires locaux, aides DOM
+  store.js          état persistant, séances, déverrouillage des zones
+  progression.js    moteur de rythme : planchers, validation, régression
+  anim.js           silhouettes animées (SVG + SMIL, aucune image)
+  ui.js             routeur, onglets, feuilles, icônes
+  onboarding.js     bienvenue, choix de zone
+  home.js           accueil, onglet Séance, zone non spécifiée
+  session.js        déroulé du circuit (machine à états)
+  checkin.js        point quotidien à 3 paliers, signalement de douleur
+  history.js        répétitions par tour, progression du rythme
+  profile.js        prénom, rappel, philosophie, aide
+  notify.js         rappel quotidien doux
+  app.js            amorçage et délégation d'évènements
+```
+
+**Pour ajuster le contenu, `js/config.js` suffit dans la plupart des cas** :
+exercices, repères sensoriels, temps de récupération, plafond de temps,
+planchers de jours, zones du corps, paliers, textes de philosophie.
+
+---
+
+## Ce qui est implémenté
+
+- Onboarding : bienvenue, prénom, choix de la zone de départ
+- Verrouillage de la seconde zone jusqu'au lendemain du premier circuit
+- Circuit jambes complet : 3 tours × 4 exercices, récupérations 30 / 30 / 15 / 60 s,
+  plafond de temps global, transition automatique non zappable
+- Démonstrations animées en silhouette + replay accessible pendant l'effort
+- Repères sensoriels affichés en continu pendant l'exercice
+- Saisie des répétitions par tour, état ambre si la saisie manque à 0 s
+- Point quotidien à 3 paliers, indépendant par zone
+- Signalement de douleur localisée, à tout moment
+- Moteur de rythme : plancher 3 jours, réduction à 2 après 3 circuits validés,
+  régression sur palier 3 ou sur deux paliers 2 consécutifs
+- Historique : répétitions par tour, ressenti des jours suivants, rythme
+- Profil : prénom, rappel, zones, philosophie, aide, réinitialisation
+
+## Ce qui ne l'est pas
+
+- **Circuit ceinture abdominale** : les exercices et repères sensoriels sont en
+  place, la structure du circuit ne l'est pas (§8 du CDC). La zone existe et
+  affiche ce qu'il reste à trancher plutôt que de tourner sur des valeurs
+  inventées.
+- Échauffement, détection de stagnation, gainage statique, course et natation.
+
+---
+
+## Points d'interprétation
+
+Trois endroits où le cahier des charges laissait le choix ouvert. Ils sont
+isolés et faciles à changer.
+
+**Validation d'un circuit** (§7.8) — « la douleur s'est résolue en 3 jours ou
+moins ». Retenu : un circuit est validé s'il ne reste aucun palier 3 au jour 3
+ou après. Un palier 3 au jour 2 suivi d'un retour au calme est validé ; un
+palier 3 encore présent au jour 3 ne l'est pas. Les paliers 2 ne cassent pas la
+validation — ils sont traités séparément par la règle de régression (§7.9).
+→ `js/progression.js`, fonction `sessionStatus`.
+
+**Plafond de temps** (§7.1) — « ~15-20 minutes ». Retenu : 20 minutes, la borne
+haute, et **aucun décompte affiché pendant l'effort** (pas de pression visuelle).
+La séance se referme en douceur à l'échéance.
+→ `js/config.js`, `globalCapSeconds`.
+
+**Transition après saisie** (§7.6) — « dès que la personne saisit une valeur, la
+transition se fait immédiatement ». Pris au pied de la lettre, taper « 1 » de
+« 12 » validerait 1 répétition. Retenu : un délai de stabilisation de 1,2 s
+après la dernière touche. Le ressenti reste immédiat, le temps de récupération
+n'est toujours pas zappable.
+→ `js/session.js`, constante `SETTLE_MS`.
+
+---
+
+## Notifications
+
+Sans serveur, une PWA ne peut pas pousser de notification quand elle est fermée.
+Le rappel quotidien part si l'app a été ouverte dans la journée et que
+l'autorisation a été donnée (réglable dans Profil). Le vrai filet reste la carte
+**« Le point du jour »** en haut de l'accueil, qui ne dépend d'aucune permission.
+
+Si le rappel fermé devient important, il faudra passer à une app native
+(Expo / React Native) ou ajouter un petit serveur de push.

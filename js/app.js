@@ -1,0 +1,89 @@
+/* SensaSport — amorçage et délégation d'évènements globale. */
+(function () {
+  const U = App.util, ui = App.ui;
+
+  /* ---------------------------------------------------- CLICS GLOBAUX --- */
+
+  document.addEventListener('click', function (e) {
+    const t = e.target.closest('[data-tab],[data-back],[data-go],[data-start],[data-checkin],' +
+      '[data-history],[data-pain],[data-ready],[data-stop],[data-replay],[data-key],' +
+      '[data-quit],[data-quit-confirm],[data-quit-cancel],[data-sheet-close],' +
+      '[data-hzone],[data-hex],#finishBtn');
+    if (!t) return;
+
+    const a = function (n) { return t.getAttribute(n); };
+
+    /* Feuille : on ferme d'abord, une éventuelle navigation suit. */
+    if (t.hasAttribute('data-sheet-close') || t.hasAttribute('data-quit-cancel')) {
+      ui.closeSheet();
+      if (!t.hasAttribute('data-go')) return;
+    }
+
+    if (t.hasAttribute('data-tab'))     return ui.go(a('data-tab'));
+    if (t.hasAttribute('data-back'))    return ui.back();
+    if (t.hasAttribute('data-go'))      return ui.go(a('data-go'));
+
+    if (t.hasAttribute('data-start'))   return App.session.start(a('data-start'));
+    if (t.hasAttribute('data-checkin')) return ui.go('checkin', { zoneId: a('data-checkin') });
+    if (t.hasAttribute('data-history')) return App.history.openZone(a('data-history'));
+    if (t.hasAttribute('data-pain'))    return ui.go('pain');
+
+    if (t.hasAttribute('data-ready'))   return App.session.handleReady();
+    if (t.hasAttribute('data-stop'))    return App.session.handleStop();
+    if (t.hasAttribute('data-replay'))  return App.session.replay();
+    if (t.hasAttribute('data-key'))     return App.session.handleKey(a('data-key'));
+    if (t.hasAttribute('data-quit'))    return App.session.handleQuit();
+    if (t.hasAttribute('data-quit-confirm')) return App.session.handleQuitConfirm();
+    if (t.id === 'finishBtn')           return App.session.handleFinish();
+
+    if (t.hasAttribute('data-hzone'))   return App.history.selectZone(a('data-hzone'));
+    if (t.hasAttribute('data-hex'))     return App.history.selectExercise(a('data-hex'));
+  });
+
+  /* Le check-in se répond depuis l'accueil comme depuis son écran dédié. */
+  document.addEventListener('click', function (e) {
+    const t = e.target.closest('[data-tier]');
+    if (!t) return;
+    const group = t.closest('[data-tier-group]');
+    if (!group) return;
+    const zoneId = group.getAttribute('data-tier-group');
+    const tier = Number(t.getAttribute('data-tier'));
+    App.store.recordTier(zoneId, tier);
+    App.checkin.feedback(zoneId, tier);
+  });
+
+  /* Le pavé numérique répond aussi au vrai clavier, sur ordinateur. */
+  document.addEventListener('keydown', function (e) {
+    if (!App.session.isRunning()) return;
+    if (/^[0-9]$/.test(e.key)) { App.session.handleKey(e.key); e.preventDefault(); }
+    else if (e.key === 'Backspace') { App.session.handleKey('back'); e.preventDefault(); }
+  });
+
+  /* ------------------------------------------------------- DÉMARRAGE --- */
+
+  function boot() {
+    const s = App.store.load();
+    App.store.refreshUnlocks();
+
+    ui.go(s.onboarded ? 'home' : 'welcome');
+
+    if (App.store.persistenceWarning) {
+      ui.toast('Stockage local indisponible : cette session ne sera pas conservée.');
+    }
+
+    App.notify.init();
+
+    /* Le cache hors ligne n'existe que pour la version servie en fichiers
+       séparés : la version compilée en page unique n'a pas de sw.js. */
+    if (!window.SENSASPORT_SINGLE_FILE &&
+        'serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* hors ligne non critique */ });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();

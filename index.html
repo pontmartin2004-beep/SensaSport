@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SensaSport</title>
+  <meta name="description" content="Entraînement au poids du corps, à la sensation. Progression sereine, sans blessure.">
+  <meta name="theme-color" content="#2E7D5B">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SensaSport">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app">
+    <main id="screen"></main>
+    <nav id="tabbar" class="tabbar" aria-label="Navigation principale"></nav>
+  </div>
+
+  <!-- Scripts classiques, chargés dans l'ordre : l'app tourne sans build,
+       sans dépendance et sans connexion. -->
+  <script src="js/config.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/progression.js"></script>
+  <script src="js/anim.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/notify.js"></script>
+  <script src="js/onboarding.js"></script>
+  <script src="js/home.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/checkin.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

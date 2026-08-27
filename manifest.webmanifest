@@ -1,0 +1,17 @@
+{
+  "name": "SensaSport",
+  "short_name": "SensaSport",
+  "description": "Entraînement au poids du corps, à la sensation. Progression sereine, sans blessure.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAFBFA",
+  "theme_color": "#2E7D5B",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
