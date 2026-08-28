@@ -206,3 +206,35 @@ git commit -m "Retire le cahier des charges du depot"
 perturber le dossier `.git`. Si tu vois des erreurs git inexpliquées, déplace le
 projet hors de OneDrive (par exemple `C:\dev\sensasport`) — GitHub servira
 alors de sauvegarde.
+
+---
+
+## Mode test (local uniquement)
+
+Une horloge virtuelle permet de sauter des jours pour vérifier la mécanique de
+progression sans attendre les planchers réels.
+
+Elle vit dans deux fichiers **ignorés par git et jamais déployés** :
+`js/dev.js` et `dev.html`. Le site public n'en contient aucune trace et n'y fait
+aucune référence — rien à masquer, puisque rien n'est envoyé.
+
+```powershell
+.\serve.ps1
+```
+
+Puis ouvrir <http://127.0.0.1:8123/dev.html> (et non `index.html`).
+
+Une barre sombre apparaît en haut : jour simulé, boutons −1 j / +1 j / +3 j /
+Aujourd'hui. Depuis la console, `devClock(30)` fixe directement un décalage.
+
+Le décalage est conservé d'un rechargement à l'autre. Il agit sur `App.util.today()`,
+le point d'entrée unique de toute la logique de calendrier : planchers de jours,
+fenêtres de check-in, validation des circuits et déverrouillage de zone suivent
+automatiquement. Les chronos de récupération ne sont pas touchés — ce sont des
+durées, pas des dates.
+
+Comme `127.0.0.1` est une origine distincte de `github.io`, les données de test
+sont **naturellement séparées** de celles de l'app installée sur ton téléphone.
+
+> Ces deux fichiers n'étant pas versionnés, ils ne sont pas sauvegardés sur
+> GitHub. Ils se régénèrent en quelques secondes si besoin.

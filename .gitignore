@@ -11,3 +11,7 @@ desktop.ini
 .vscode/
 .idea/
 *.swp
+
+# Mode test : local uniquement, ne doit jamais être déployé
+js/dev.js
+dev.html
