@@ -28,6 +28,9 @@ App.store = (function () {
       onboarded: false,
       startZone: null,
       zones: { legs: blankZone('legs'), core: blankZone('core') },
+      /* Séance commencée mais pas terminée. Réécrite à chaque étape du
+         circuit pour que rien ne soit perdu si l’app est fermée en route. */
+      activeRun: null,
       settings: {
         checkinReminder: true,
         reminderHour: 19,      // heure du rappel doux quotidien
@@ -153,6 +156,38 @@ App.store = (function () {
     save(function (s) { s.zones[zoneId].seenDemos[exerciseId] = true; });
   }
 
+  /* --------------------------------------------- SÉANCE INTERROMPUE --- */
+
+  /* ------------------------------------------------ STOCKAGE DURABLE ---
+     Par défaut, un navigateur peut évincer les données d'un site quand
+     l'espace manque. On demande le statut « persistant », qui l'en empêche.
+     Accordé sans question quand l'app est installée sur l'écran d'accueil. */
+
+  function requestPersistence() {
+    if (!navigator.storage || !navigator.storage.persist) {
+      return Promise.resolve({ supported: false, persisted: false });
+    }
+    return navigator.storage.persisted()
+      .then(function (already) {
+        return already ? true : navigator.storage.persist();
+      })
+      .then(function (ok) { return { supported: true, persisted: !!ok }; })
+      .catch(function () { return { supported: true, persisted: false }; });
+  }
+
+  function persistenceStatus() {
+    if (!navigator.storage || !navigator.storage.persisted) {
+      return Promise.resolve({ supported: false, persisted: false });
+    }
+    return navigator.storage.persisted()
+      .then(function (p) { return { supported: true, persisted: !!p }; })
+      .catch(function () { return { supported: true, persisted: false }; });
+  }
+
+  function saveRun(snapshot) { save(function (s) { s.activeRun = snapshot; }); }
+  function clearRun() { save(function (s) { s.activeRun = null; }); }
+  function getRun() { return get().activeRun || null; }
+
   /* -------------------------------------------- CHECK-IN & DOULEURS --- */
 
   /* Enregistre un palier pour aujourd’hui sur la dernière séance de la zone.
@@ -192,6 +227,8 @@ App.store = (function () {
     refreshUnlocks: refreshUnlocks,
     newSession: newSession, pushSession: pushSession, lastSession: lastSession,
     markDemoSeen: markDemoSeen,
+    saveRun: saveRun, clearRun: clearRun, getRun: getRun,
+    requestPersistence: requestPersistence, persistenceStatus: persistenceStatus,
     recordTier: recordTier,
     reset: reset,
     persistenceWarning: false

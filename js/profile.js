@@ -61,6 +61,13 @@
         '<div style="margin-top:6px">' + zoneRows + '</div>' +
       '</div>' +
 
+      '<div class="card">' +
+        '<div class="eyebrow">Tes données</div>' +
+        '<p class="body" style="margin-top:8px">Tout est enregistré sur cet appareil, ' +
+        'et nulle part ailleurs. Aucune donnée n’est envoyée sur internet.</p>' +
+        '<p class="small" style="margin-top:10px" id="pStorage">Vérification…</p>' +
+      '</div>' +
+
       '<div class="card accent">' +
         '<div class="eyebrow">Pourquoi on avance comme ça</div>' +
         '<div class="stack" style="margin-top:10px">' +
@@ -121,6 +128,21 @@
 
     const notifState = U.$('#notifState', root);
     if (notifState) notifState.textContent = App.notify.statusText();
+
+    const storageState = U.$('#pStorage', root);
+    App.store.persistenceStatus().then(function (st) {
+      if (!storageState) return;
+      if (!st.supported) {
+        storageState.textContent =
+          'Ton navigateur ne permet pas de vérifier la durabilité du stockage.';
+      } else if (st.persisted) {
+        storageState.textContent =
+          'Stockage durable actif : le navigateur ne supprimera pas tes séances pour libérer de la place.';
+      } else {
+        storageState.textContent =
+          'Stockage standard. Installe l’app sur ton écran d’accueil pour que le navigateur protège tes séances.';
+      }
+    });
 
     U.$('#pReset', root).addEventListener('click', function () {
       ui.sheet(

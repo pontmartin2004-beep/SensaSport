@@ -8,6 +8,7 @@
     const t = e.target.closest('[data-tab],[data-back],[data-go],[data-start],[data-checkin],' +
       '[data-history],[data-pain],[data-ready],[data-stop],[data-replay],[data-key],' +
       '[data-quit],[data-quit-confirm],[data-quit-cancel],[data-sheet-close],' +
+      '[data-resume],[data-finish-pending],[data-discard-pending],' +
       '[data-hzone],[data-hex],#finishBtn');
     if (!t) return;
 
@@ -34,6 +35,10 @@
     if (t.hasAttribute('data-key'))     return App.session.handleKey(a('data-key'));
     if (t.hasAttribute('data-quit'))    return App.session.handleQuit();
     if (t.hasAttribute('data-quit-confirm')) return App.session.handleQuitConfirm();
+
+    if (t.hasAttribute('data-resume'))          return App.session.resume();
+    if (t.hasAttribute('data-finish-pending'))  return App.session.finishInterrupted();
+    if (t.hasAttribute('data-discard-pending')) return App.session.discardInterrupted();
     if (t.id === 'finishBtn')           return App.session.handleFinish();
 
     if (t.hasAttribute('data-hzone'))   return App.history.selectZone(a('data-hzone'));
@@ -72,6 +77,9 @@
     }
 
     App.notify.init();
+
+    /* Demande au navigateur de ne pas évincer les données d'entraînement. */
+    App.store.requestPersistence();
 
     /* Le cache hors ligne n'existe que pour la version servie en fichiers
        séparés : la version compilée en page unique n'a pas de sw.js. */

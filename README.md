@@ -84,6 +84,10 @@ planchers de jours, zones du corps, paliers, textes de philosophie.
   régression sur palier 3 ou sur deux paliers 2 consécutifs
 - Historique : répétitions par tour, ressenti des jours suivants, rythme
 - Profil : prénom, rappel, zones, philosophie, aide, réinitialisation
+- Reprise de séance : le circuit en cours est écrit sur le disque à chaque
+  étape et à chaque saisie ; si l’app se ferme en route, elle propose de
+  reprendre, de clôturer la séance en gardant les répétitions, ou de l’effacer
+- Stockage durable demandé au navigateur, pour qu’il n’évince pas les séances
 
 ## Ce qui ne l'est pas
 

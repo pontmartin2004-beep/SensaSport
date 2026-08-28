@@ -72,6 +72,30 @@
     '</div>';
   }
 
+  /* Séance interrompue : jamais présentée comme un échec, juste une reprise. */
+  function interruptedCard(snap) {
+    const d = App.session.describePending(snap);
+    return '<div class="card amber">' +
+      '<div class="eyebrow" style="color:var(--amber-700)">Séance en cours</div>' +
+      '<div class="subtitle" style="margin-top:6px">' + U.esc(d.cfg.name) +
+        ' — tour ' + d.round + '/' + d.rounds + '</div>' +
+      '<p class="body" style="margin-top:8px;color:var(--amber-700)">' +
+        (d.sameDay
+          ? 'Tu t’es arrêté en cours de route. Tes ' + d.total +
+            ' répétition' + (d.total > 1 ? 's' : '') + ' sont gardées.'
+          : 'Commencée le ' + U.esc(U.formatDayShort(d.day)) + ', jamais terminée. ' +
+            'Tes ' + d.total + ' répétition' + (d.total > 1 ? 's' : '') + ' sont gardées.') +
+      '</p>' +
+      '<div class="stack" style="margin-top:16px">' +
+        (d.sameDay
+          ? '<button class="btn btn-primary" data-resume="1">Reprendre où j’en étais</button>'
+          : '') +
+        '<button class="btn btn-ghost" data-finish-pending="1">Terminer cette séance ici</button>' +
+        '<button class="btn btn-quiet" data-discard-pending="1">L’effacer</button>' +
+      '</div>' +
+    '</div>';
+  }
+
   function checkinCard(pending) {
     const cfg = C.zone(pending.zoneId);
     return '<div class="card accent">' +
@@ -91,9 +115,12 @@
     const unlocked = C.zoneList.filter(function (c) { return App.store.zone(c.id).unlocked; });
     const locked   = C.zoneList.filter(function (c) { return !App.store.zone(c.id).unlocked; });
 
+    const interrupted = App.store.getRun();
+
     root.innerHTML =
       ui.header(greeting(s.firstName)) +
       '<div style="margin-top:22px">' +
+        (interrupted ? interruptedCard(interrupted) : '') +
         pendings.map(checkinCard).join('') +
         unlocked.map(zoneCard).join('') +
         (locked.length ? lockedCard() : '') +
@@ -113,6 +140,7 @@
     root.innerHTML =
       ui.header('Séance', { sub: 'Tes circuits, chacun à son rythme.' }) +
       '<div style="margin-top:22px">' +
+        (App.store.getRun() ? interruptedCard(App.store.getRun()) : '') +
         unlocked.map(zoneCard).join('') +
         (unlocked.length < C.zoneList.length ? lockedCard() : '') +
       '</div>' +
