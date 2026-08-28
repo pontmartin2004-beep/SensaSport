@@ -64,7 +64,10 @@
         zoneCard(C.zones.core) +
         zoneCard(C.zones.legs) +
       '</div>' +
-      '<p class="muted-note center" style="margin-top:18px">Tu pourras débloquer l’autre zone dès demain.</p>' +
+      /* Le déblocage part du premier circuit, pas de l’inscription (§6) :
+         la promesse doit dire la même chose que le code. */
+      '<p class="muted-note center" style="margin-top:18px">' +
+        'L’autre zone se débloquera dès le lendemain de ton premier circuit.</p>' +
       '<div style="margin-top:24px">' +
         '<button class="btn btn-primary" id="confirm" disabled>Continuer</button>' +
       '</div>';
