@@ -176,37 +176,5 @@
       '</div>';
   });
 
-  /* Zone dont le circuit n'est pas encore spécifié (§8) */
-  ui.register('zone-pending', function (root, params) {
-    const cfg = C.zone(params.zoneId);
-    root.innerHTML =
-      ui.header(cfg.name, { back: true, eyebrow: 'Circuit en cours de définition' }) +
-      '<p class="body" style="margin-top:14px">' +
-        'Les exercices et leurs repères sensoriels sont arrêtés. La structure du circuit, elle, ' +
-        'ne l’est pas encore — et on préfère ne rien inventer plutôt que de te faire tourner ' +
-        'sur des réglages approximatifs.' +
-      '</p>' +
-      '<div class="card" style="margin-top:22px">' +
-        '<div class="eyebrow">Ce qu’il reste à trancher</div>' +
-        '<ul class="body" style="margin:10px 0 0;padding-left:18px">' +
-          cfg.missingSpecs.map(function (m) { return '<li>' + U.esc(m) + '</li>'; }).join('') +
-        '</ul>' +
-      '</div>' +
-      '<div class="divider"></div>' +
-      '<div class="eyebrow">Les exercices retenus</div>' +
-      cfg.exercises.map(function (ex) {
-        return '<div class="card" style="margin-top:12px">' +
-          '<div style="display:flex;gap:14px;align-items:center">' +
-            '<div style="flex:0 0 78px">' + App.anim.forExercise(ex, { ground: false }) + '</div>' +
-            '<div style="flex:1">' +
-              '<div class="subtitle" style="font-size:17px">' + U.esc(ex.name) + '</div>' +
-              '<div class="small" style="margin-top:5px">' + U.esc(ex.posture) + '</div>' +
-            '</div>' +
-          '</div>' +
-          '<div class="sensory" style="margin-top:14px;font-size:15px">' + U.esc(ex.sensory) + '</div>' +
-        '</div>';
-      }).join('');
-  });
-
   App.home = { zoneCard: zoneCard, lockedCard: lockedCard };
 })();

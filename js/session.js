@@ -62,7 +62,13 @@
 
   function start(zoneId) {
     const cfg = C.zone(zoneId);
-    if (!cfg.implemented) { ui.go('zone-pending', { zoneId: zoneId }); return; }
+    /* Garde-fou : toutes les zones sont désormais implémentées, mais une
+       nouvelle pourrait être ajoutée avant que son circuit soit défini. */
+    if (!cfg.implemented) {
+      ui.toast('Le circuit ' + cfg.name.toLowerCase() + ' n’est pas encore prêt.');
+      ui.go('home');
+      return;
+    }
 
     /* Une séance interrompue ne doit jamais être écrasée en silence. */
     const pending = App.store.getRun();

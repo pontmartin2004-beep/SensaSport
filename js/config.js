@@ -76,19 +76,25 @@ App.config = (function () {
     ]
   };
 
-  /* --------------------------------------------- CEINTURE ABDOMINALE (§8) */
-  /* Exercices et repères sensoriels sont spécifiés ; la structure du circuit
-     (tours, ordre, timers, plafond, plancher de jours) ne l’est pas encore.
-     On ne l’invente pas : la zone existe et se déverrouille, mais le circuit
-     affiche ce qu’il manque au lieu de tourner sur des valeurs arbitraires. */
+  /* --------------------------------------------- CEINTURE ABDOMINALE (§8)
+     Objectif : encaisser l’impact de la course (abdos et bas du dos).
+     Exercices dynamiques uniquement en V1, le gainage statique viendra plus tard.
+
+     La structure, laissée ouverte par le cahier des charges, a été arrêtée :
+     3 tours, ordre du §8, récupérations identiques aux jambes, plafond de
+     20 minutes et même délai entre séances. Terminer par l’extension lombaire
+     rééquilibre le dos après les deux mouvements de flexion. */
 
   const CORE = {
     id: 'core',
     name: 'Ceinture abdominale',
     label: 'Ceinture abdominale',
-    implemented: false,
+    implemented: true,
 
     checkinQuestion: 'Comment se sent ta ceinture abdominale aujourd’hui ?',
+
+    rounds: 3,
+    globalCapSeconds: 20 * 60,
 
     delayDefault: 3,
     delayReduced: 2,
@@ -99,29 +105,29 @@ App.config = (function () {
         name: 'Abdos classiques',
         anim: 'crunch',
         posture: 'Allongé, mains derrière la tête, coudes qui remontent au niveau des genoux.',
-        sensory: 'Abdos qui chauffent, tu tires sur ta nuque pour continuer ? Arrête-toi.'
+        sensory: 'Abdos qui chauffent, tu tires sur ta nuque pour continuer ? Arrête-toi.',
+        extraIntro: null,
+        restAfter: 30
       },
       {
         id: 'leg_raise',
         name: 'Relevé de jambes',
         anim: 'legraise',
         posture: 'Allongé sur le dos, jambes tendues qui montent sans décoller le bas du dos.',
-        sensory: 'Bas du ventre qui chauffe, bas du dos qui se cambre ? Arrête-toi.'
+        sensory: 'Bas du ventre qui chauffe, bas du dos qui se cambre ? Arrête-toi.',
+        extraIntro: null,
+        restAfter: 30
       },
       {
         id: 'superman',
         name: 'Extension lombaire',
         anim: 'superman',
         posture: 'Allongé sur le ventre, on soulève simultanément buste et jambes.',
-        sensory: 'Bas du dos qui chauffe, tu dois t’aider d’un élan pour monter ? Arrête-toi.'
+        sensory: 'Bas du dos qui chauffe, tu dois t’aider d’un élan pour monter ? Arrête-toi.',
+        extraIntro: null,
+        /* Dernier exercice du tour : 1 minute entre chaque tour complet. */
+        restAfter: 60
       }
-    ],
-
-    missingSpecs: [
-      'Structure exacte du circuit (nombre de tours, ordre des exercices)',
-      'Plafond de temps global',
-      'Temps de récupération entre exercices et entre tours',
-      'Plancher de jours entre deux séances'
     ]
   };
 

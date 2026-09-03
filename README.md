@@ -75,6 +75,8 @@ délais de récupération, paliers, textes de philosophie.
 - Verrouillage de la seconde zone jusqu'au lendemain du premier circuit
 - Circuit jambes complet : 3 tours × 4 exercices, récupérations 30 / 30 / 15 / 60 s,
   plafond de temps global, transition automatique non zappable
+- Circuit ceinture abdominale : 3 tours × 3 exercices, récupérations 30 / 30 / 60 s,
+  même plafond et même délai que les jambes
 - Démonstrations animées en silhouette + replay accessible pendant l'effort
 - Repères sensoriels affichés en continu pendant l'exercice
 - Saisie des répétitions par tour, état ambre si la saisie manque à 0 s
@@ -92,18 +94,23 @@ délais de récupération, paliers, textes de philosophie.
 
 ## Ce qui ne l'est pas
 
-- **Circuit ceinture abdominale** : les exercices et repères sensoriels sont en
-  place, la structure du circuit ne l'est pas (§8 du CDC). La zone existe et
-  affiche ce qu'il reste à trancher plutôt que de tourner sur des valeurs
-  inventées.
 - Échauffement, détection de stagnation, gainage statique, course et natation.
 
 ---
 
 ## Points d'interprétation
 
-Trois endroits où le cahier des charges laissait le choix ouvert. Ils sont
+Quatre endroits où le cahier des charges laissait le choix ouvert. Ils sont
 isolés et faciles à changer.
+
+**Structure du circuit ceinture abdominale** (§8) — laissée ouverte par le cahier
+des charges. Arrêtée à : 3 tours, ordre du §8 (abdos classiques → relevé de
+jambes → extension lombaire), récupérations et plafond identiques aux jambes,
+même délai entre séances. Terminer par l’extension lombaire rééquilibre le dos
+après les deux mouvements de flexion. Le délai reste volontairement prudent
+malgré la piste d’un cycle plus léger évoquée au §8 : le bas du dos est une zone
+où l’on se blesse, et le principe « plutôt plus lent que plus rapide » prime.
+→ `js/config.js`, constante `CORE`.
 
 **Rythme d’entraînement** — le cahier des charges prévoyait une réduction du
 plancher après 3 circuits validés d’affilée et une régression sur deux paliers 2
