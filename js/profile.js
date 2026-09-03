@@ -35,24 +35,17 @@
         '<div class="switch-row">' +
           '<div>' +
             '<div class="subtitle" style="font-size:16px">Rappel du point quotidien</div>' +
-            '<div class="small" style="margin-top:4px">Une fois par jour, tant que le suivi est ouvert.</div>' +
+            '<div class="small" style="margin-top:4px">Vers ' + C.REMINDER_HOUR +
+              'h, uniquement les jours où le point du jour t’attend.</div>' +
           '</div>' +
           '<label class="switch">' +
             '<input type="checkbox" id="pReminder"' + (s.settings.checkinReminder ? ' checked' : '') + '>' +
             '<span class="track"></span><span class="knob"></span>' +
           '</label>' +
         '</div>' +
-        '<div id="reminderDetail" style="margin-top:16px;' +
+        '<div id="reminderDetail" style="margin-top:14px;' +
              (s.settings.checkinReminder ? '' : 'display:none') + '">' +
-          '<label class="label" for="pHour">Vers quelle heure ?</label>' +
-          '<select class="field" id="pHour">' +
-            Array.from({ length: 18 }, function (_, i) {
-              const h = i + 5;
-              return '<option value="' + h + '"' + (h === s.settings.reminderHour ? ' selected' : '') +
-                     '>' + h + 'h</option>';
-            }).join('') +
-          '</select>' +
-          '<p class="muted-note" style="margin-top:10px" id="notifState"></p>' +
+          '<p class="muted-note" id="notifState"></p>' +
         '</div>' +
       '</div>' +
 
@@ -117,13 +110,6 @@
       detail.style.display = rem.checked ? '' : 'none';
       if (rem.checked) App.notify.request();
       App.notify.schedule();
-    });
-
-    const hour = U.$('#pHour', root);
-    hour.addEventListener('change', function () {
-      App.store.save(function (st) { st.settings.reminderHour = Number(hour.value); });
-      App.notify.schedule();
-      ui.toast('Rappel réglé vers ' + hour.value + 'h');
     });
 
     const notifState = U.$('#notifState', root);

@@ -59,7 +59,7 @@ js/
   checkin.js        point du jour à 3 paliers
   history.js        répétitions par tour, progression du rythme
   profile.js        prénom, rappel, philosophie, aide
-  notify.js         rappel quotidien doux
+  notify.js         rappel quotidien doux, à heure fixe
   app.js            amorçage et délégation d'évènements
 ```
 
@@ -130,8 +130,10 @@ n'est toujours pas zappable.
 ## Notifications
 
 Sans serveur, une PWA ne peut pas pousser de notification quand elle est fermée.
-Le rappel quotidien part si l'app a été ouverte dans la journée et que
-l'autorisation a été donnée (réglable dans Profil). Le vrai filet reste la carte
+Le rappel quotidien part si l’app a été ouverte dans la journée et que
+l’autorisation a été donnée. Son heure est la même pour tout le monde —
+`REMINDER_HOUR` dans `js/config.js` — et seule son activation se règle
+dans Profil. Le vrai filet reste la carte
 **« Le point du jour »** en haut de l'accueil, qui ne dépend d'aucune permission.
 
 Si le rappel fermé devient important, il faudra passer à une app native

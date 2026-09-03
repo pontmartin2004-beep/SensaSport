@@ -32,9 +32,7 @@ App.store = (function () {
          circuit pour que rien ne soit perdu si l’app est fermée en route. */
       activeRun: null,
       settings: {
-        checkinReminder: true,
-        reminderHour: 6,       // heure du rappel, au petit matin
-        hourMigrated: false,   // bascule unique depuis l’ancienne valeur de 19h
+        checkinReminder: true, // le rappel peut être coupé ; son heure est fixe
         notifiedOn: {}         // dayKey -> true, pour ne notifier qu’une fois par jour
       }
     };
@@ -70,14 +68,12 @@ App.store = (function () {
     }
     for (const k in fresh.settings) if (!(k in state.settings)) state.settings[k] = fresh.settings[k];
 
-    /* L’heure du rappel est passée de 19h au petit matin. La boucle
-       ci-dessus ne touche que les champs absents : sans ça, les profils
-       déjà créés resteraient à 19h. On ne déplace que ceux restés sur
-       l’ancienne valeur par défaut, et une seule fois — quelqu’un qui
-       rechoisit 19h ensuite le garde. */
-    if (!state.settings.hourMigrated) {
-      if (state.settings.reminderHour === 19) state.settings.reminderHour = fresh.settings.reminderHour;
-      state.settings.hourMigrated = true;
+    /* L’heure du rappel a été réglable un temps, puis fixée pour tout le
+       monde. On efface les réglages devenus sans objet plutôt que de les
+       laisser traîner dans l’état. */
+    if ('reminderHour' in state.settings || 'hourMigrated' in state.settings) {
+      delete state.settings.reminderHour;
+      delete state.settings.hourMigrated;
       write();
     }
 

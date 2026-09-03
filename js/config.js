@@ -148,6 +148,9 @@ App.config = (function () {
     zone: function (id) { return this.zones[id]; },
     COUNT_REMINDER: COUNT_REMINDER,
     TIERS: TIERS,
-    PHILOSOPHY: PHILOSOPHY
+    PHILOSOPHY: PHILOSOPHY,
+    /* Heure du rappel, identique pour tout le monde : tôt convient aux
+       lève-tôt, et le rappel reste visible toute la journée pour les autres. */
+    REMINDER_HOUR: 6
   };
 })();

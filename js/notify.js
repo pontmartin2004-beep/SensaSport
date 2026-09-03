@@ -57,7 +57,7 @@ App.notify = (function () {
 
     const now = new Date();
     const target = new Date();
-    target.setHours(s.settings.reminderHour, 0, 0, 0);
+    target.setHours(C.REMINDER_HOUR, 0, 0, 0);
 
     if (now >= target) {
       fireIfDue();
