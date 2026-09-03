@@ -25,9 +25,10 @@ App.config = (function () {
        aucun compte à rebours n’est affiché pendant l’effort. */
     globalCapSeconds: 20 * 60,
 
-    /* Planchers de jours entre deux séances (§7.8) */
-    floorInitial: 3,
-    floorReduced: 2,
+    /* Délai entre une séance et le point du jour qui rouvre la suivante.
+       3 jours par défaut, 2 quand le cycle précédent a été net et enchaîné. */
+    delayDefault: 3,
+    delayReduced: 2,
 
     exercises: [
       {
@@ -89,8 +90,8 @@ App.config = (function () {
 
     checkinQuestion: 'Comment se sent ta ceinture abdominale aujourd’hui ?',
 
-    floorInitial: 3,
-    floorReduced: 2,
+    delayDefault: 3,
+    delayReduced: 2,
 
     exercises: [
       {
@@ -124,22 +125,7 @@ App.config = (function () {
     ]
   };
 
-  /* --------------------------------------------------------------- DOULEUR */
-  /* Zones du corps pour le signalement localisé (§7.7) */
-  const BODY_AREAS = [
-    { id: 'lower_back', label: 'Bas du dos' },
-    { id: 'abs',        label: 'Abdominaux' },
-    { id: 'hips',       label: 'Hanches / fessiers' },
-    { id: 'quads',      label: 'Cuisses (avant)' },
-    { id: 'hamstrings', label: 'Cuisses (arrière)' },
-    { id: 'knees',      label: 'Genoux' },
-    { id: 'calves',     label: 'Mollets' },
-    { id: 'ankles',     label: 'Chevilles' },
-    { id: 'neck',       label: 'Nuque' },
-    { id: 'other',      label: 'Autre' }
-  ];
-
-  /* Les 3 paliers du check-in (§7.7) */
+  /* Les 3 paliers du point du jour */
   const TIERS = [
     { tier: 1, label: 'Aucune gêne',
       hint: 'Tout va bien, je ne sens rien de particulier.' },
@@ -161,12 +147,7 @@ App.config = (function () {
     zoneList: [LEGS, CORE],
     zone: function (id) { return this.zones[id]; },
     COUNT_REMINDER: COUNT_REMINDER,
-    BODY_AREAS: BODY_AREAS,
     TIERS: TIERS,
-    PHILOSOPHY: PHILOSOPHY,
-    /* Fenêtre de suivi de la douleur après une séance (§7.7) */
-    CHECKIN_WINDOW_DAYS: 3,
-    /* Nombre de circuits consécutifs validés pour réduire le plancher (§7.8) */
-    CIRCUITS_TO_REDUCE_FLOOR: 3
+    PHILOSOPHY: PHILOSOPHY
   };
 })();

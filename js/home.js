@@ -8,8 +8,10 @@
     return name ? part + ', ' + name : part;
   }
 
-  /* Carte d'une zone déverrouillée, selon l'état de son cycle. */
-  function zoneCard(cfg) {
+  /* Carte d'une zone déverrouillée, selon l'état de son cycle.
+     `pointDuJourAffiche` : la carte du point du jour est déjà à l'écran
+     au-dessus, la zone ne redemande donc pas la même chose. */
+  function zoneCard(cfg, pointDuJourAffiche) {
     const next = P.nextSession(cfg.id);
     const z = App.store.zone(cfg.id);
     const count = z.sessions.length;
@@ -23,28 +25,43 @@
           : '<p class="body">Ton corps a eu le temps de récupérer. Quand tu veux.</p>') +
         (next.gentleWarning
           ? '<div class="card amber" style="margin-top:14px;box-shadow:none">' +
-            '<p class="body" style="color:var(--amber-700)">Tu as signalé une petite gêne ces derniers jours. ' +
-            'Rien ne change dans la séance — écoute-toi simplement encore un peu plus attentivement que d’habitude, ' +
-            'et arrête-toi au premier signal.</p></div>'
+            '<p class="body" style="color:var(--amber-700)">Tu as signalé une petite gêne. ' +
+            'Rien ne change dans la séance — écoute-toi simplement encore un peu plus attentivement ' +
+            'que d’habitude, et arrête-toi au premier signal.</p></div>'
+          : '') +
+        (next.bonusToday
+          ? '<p class="small" style="margin-top:12px;color:var(--green-700)">' +
+            'En la faisant aujourd’hui, ton prochain point du jour tombera au bout de ' +
+            C.zone(cfg.id).delayReduced + ' jours au lieu de ' + C.zone(cfg.id).delayDefault + '.</p>'
           : '');
       ctaHtml = '<button class="btn btn-primary" data-start="' + cfg.id + '" style="margin-top:18px">' +
                 (next.first ? 'Commencer le test' : 'Commencer la séance') + '</button>';
 
     } else if (next.state === 'resting') {
       const d = next.daysLeft;
-      bodyHtml = '<p class="body">Récupération en cours. Ta prochaine séance sera proposée ' +
+      bodyHtml = '<p class="body">Récupération en cours. On refait le point ' +
                  (d === 1 ? 'demain' : 'dans ' + d + ' jours') + '.</p>' +
-                 '<p class="small" style="margin-top:8px">Plancher actuel : ' + next.floor.floorDays +
+                 '<p class="small" style="margin-top:8px">Rythme actuel : ' + next.delay +
                  ' jours entre deux circuits.</p>';
       ctaHtml = '<button class="btn btn-ghost" data-history="' + cfg.id + '" style="margin-top:18px">' +
                 'Revoir la dernière séance</button>';
 
+    } else if (next.state === 'checkin') {
+      bodyHtml = '<p class="body">Les ' + next.delay + ' jours de récupération sont passés. ' +
+                 'Dis-moi comment tu te sens et la séance s’ouvre.</p>';
+      ctaHtml = '<button class="btn btn-primary" data-checkin="' + cfg.id + '" style="margin-top:18px">' +
+                'Faire le point</button>';
+
     } else if (next.state === 'waiting') {
       bodyHtml = '<p class="body">Tu as signalé une gêne qui te dérange encore au quotidien. ' +
-                 'On laisse le temps faire — la suite se débloquera dès que ça se calme.</p>';
-      ctaHtml = '<button class="btn btn-ghost" data-checkin="' + cfg.id + '" style="margin-top:18px">' +
-                'Faire le point maintenant</button>';
+                 'On laisse le temps faire — la suite se rouvre dès que ça se calme.</p>';
+      ctaHtml = next.status.answeredToday
+        ? '<p class="small" style="margin-top:14px">Je te repose la question demain.</p>'
+        : '<button class="btn btn-primary" data-checkin="' + cfg.id + '" style="margin-top:18px">' +
+          'Faire le point</button>';
     }
+
+    if (pointDuJourAffiche) ctaHtml = '';
 
     return '<div class="card">' +
       '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">' +
@@ -98,10 +115,15 @@
 
   function checkinCard(pending) {
     const cfg = C.zone(pending.zoneId);
+    const relance = pending.status.awaitingRelief;
     return '<div class="card accent">' +
       '<div class="eyebrow">Le point du jour</div>' +
       '<div class="subtitle" style="margin-top:6px">' + U.esc(cfg.checkinQuestion) + '</div>' +
-      '<p class="small" style="margin-top:8px">Une réponse en un geste, pour ajuster la suite.</p>' +
+      '<p class="small" style="margin-top:8px">' +
+        (relance
+          ? 'On continue à faire le point chaque jour, jusqu’à ce que la gêne se calme.'
+          : 'Une réponse en un geste, et ta séance s’ouvre.') +
+      '</p>' +
       '<button class="btn btn-primary" data-checkin="' + cfg.id + '" style="margin-top:16px">Répondre</button>' +
     '</div>';
   }
@@ -116,19 +138,18 @@
     const locked   = C.zoneList.filter(function (c) { return !App.store.zone(c.id).unlocked; });
 
     const interrupted = App.store.getRun();
+    const zonesEnAttente = pendings.map(function (p) { return p.zoneId; });
 
     root.innerHTML =
       ui.header(greeting(s.firstName)) +
       '<div style="margin-top:22px">' +
         (interrupted ? interruptedCard(interrupted) : '') +
         pendings.map(checkinCard).join('') +
-        unlocked.map(zoneCard).join('') +
+        unlocked.map(function (c) {
+          return zoneCard(c, zonesEnAttente.indexOf(c.id) !== -1);
+        }).join('') +
         (locked.length ? lockedCard() : '') +
-      '</div>' +
-      '<div class="divider"></div>' +
-      '<button class="btn btn-ghost" data-pain="1">' + ui.icon('plus', 18) + ' Signaler une douleur</button>' +
-      '<p class="muted-note center" style="margin-top:12px">' +
-        'À tout moment, sans attendre le point du jour.</p>';
+      '</div>';
   });
 
   /* --------------------------------------------------------- ONGLET SÉANCE
@@ -141,7 +162,7 @@
       ui.header('Séance', { sub: 'Tes circuits, chacun à son rythme.' }) +
       '<div style="margin-top:22px">' +
         (App.store.getRun() ? interruptedCard(App.store.getRun()) : '') +
-        unlocked.map(zoneCard).join('') +
+        unlocked.map(function (c) { return zoneCard(c, false); }).join('') +
         (unlocked.length < C.zoneList.length ? lockedCard() : '') +
       '</div>' +
       '<div class="divider"></div>' +

@@ -6,7 +6,7 @@
 
   document.addEventListener('click', function (e) {
     const t = e.target.closest('[data-tab],[data-back],[data-go],[data-start],[data-checkin],' +
-      '[data-history],[data-pain],[data-ready],[data-stop],[data-replay],[data-key],' +
+      '[data-history],[data-ready],[data-stop],[data-replay],[data-key],' +
       '[data-quit],[data-quit-confirm],[data-quit-cancel],[data-sheet-close],' +
       '[data-resume],[data-finish-pending],[data-discard-pending],' +
       '[data-hzone],[data-hex],#finishBtn');
@@ -27,7 +27,6 @@
     if (t.hasAttribute('data-start'))   return App.session.start(a('data-start'));
     if (t.hasAttribute('data-checkin')) return ui.go('checkin', { zoneId: a('data-checkin') });
     if (t.hasAttribute('data-history')) return App.history.openZone(a('data-history'));
-    if (t.hasAttribute('data-pain'))    return ui.go('pain');
 
     if (t.hasAttribute('data-ready'))   return App.session.handleReady();
     if (t.hasAttribute('data-stop'))    return App.session.handleStop();

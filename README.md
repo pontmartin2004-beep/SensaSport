@@ -56,7 +56,7 @@ js/
   onboarding.js     bienvenue, choix de zone
   home.js           accueil, onglet Séance, zone non spécifiée
   session.js        déroulé du circuit (machine à états)
-  checkin.js        point quotidien à 3 paliers, signalement de douleur
+  checkin.js        point du jour à 3 paliers
   history.js        répétitions par tour, progression du rythme
   profile.js        prénom, rappel, philosophie, aide
   notify.js         rappel quotidien doux
@@ -65,7 +65,7 @@ js/
 
 **Pour ajuster le contenu, `js/config.js` suffit dans la plupart des cas** :
 exercices, repères sensoriels, temps de récupération, plafond de temps,
-planchers de jours, zones du corps, paliers, textes de philosophie.
+délais de récupération, paliers, textes de philosophie.
 
 ---
 
@@ -78,10 +78,11 @@ planchers de jours, zones du corps, paliers, textes de philosophie.
 - Démonstrations animées en silhouette + replay accessible pendant l'effort
 - Repères sensoriels affichés en continu pendant l'exercice
 - Saisie des répétitions par tour, état ambre si la saisie manque à 0 s
-- Point quotidien à 3 paliers, indépendant par zone
-- Signalement de douleur localisée, à tout moment
-- Moteur de rythme : plancher 3 jours, réduction à 2 après 3 circuits validés,
-  régression sur palier 3 ou sur deux paliers 2 consécutifs
+- Point du jour à 3 paliers, indépendant par zone : il ne survient qu’au bout
+  du délai de récupération, puis chaque jour tant qu’un palier 3 dure. C’est
+  l’unique façon de renseigner son état — il n’y a pas de signalement libre.
+- Moteur de rythme : 3 jours par défaut, 2 jours mérités quand le point du jour
+  est « aucune gêne » pile au bon jour et que la séance est enchaînée le jour même
 - Historique : répétitions par tour, ressenti des jours suivants, rythme
 - Profil : prénom, rappel, zones, philosophie, aide, réinitialisation
 - Reprise de séance : le circuit en cours est écrit sur le disque à chaque
@@ -104,12 +105,13 @@ planchers de jours, zones du corps, paliers, textes de philosophie.
 Trois endroits où le cahier des charges laissait le choix ouvert. Ils sont
 isolés et faciles à changer.
 
-**Validation d'un circuit** (§7.8) — « la douleur s'est résolue en 3 jours ou
-moins ». Retenu : un circuit est validé s'il ne reste aucun palier 3 au jour 3
-ou après. Un palier 3 au jour 2 suivi d'un retour au calme est validé ; un
-palier 3 encore présent au jour 3 ne l'est pas. Les paliers 2 ne cassent pas la
-validation — ils sont traités séparément par la règle de régression (§7.9).
-→ `js/progression.js`, fonction `sessionStatus`.
+**Rythme d’entraînement** — le cahier des charges prévoyait une réduction du
+plancher après 3 circuits validés d’affilée et une régression sur deux paliers 2
+consécutifs (§7.8 et §7.9). Remplacé sur demande par une règle par cycle :
+3 jours par défaut, 2 jours si le point du jour est « aucune gêne » pile au bout
+des 3 jours ET que la séance est faite ce jour-là. Chaque cycle se remérite, ce
+qui rend la régression du §7.9 sans objet.
+→ `js/progression.js`, fonction `delays`.
 
 **Plafond de temps** (§7.1) — « ~15-20 minutes ». Retenu : 20 minutes, la borne
 haute, et **aucun décompte affiché pendant l'effort** (pas de pression visuelle).

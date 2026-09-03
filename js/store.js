@@ -33,7 +33,7 @@ App.store = (function () {
       activeRun: null,
       settings: {
         checkinReminder: true,
-        reminderHour: 19,      // heure du rappel doux quotidien
+        reminderHour: 6,       // heure du rappel, au petit matin
         notifiedOn: {}         // dayKey -> true, pour ne notifier qu’une fois par jour
       }
     };
@@ -136,7 +136,7 @@ App.store = (function () {
       completed: false,        // les 3 tours ont été menés au bout
       endedBy: null,           // 'complete' | 'cap' | 'user'
       reps: {},                // exerciceId -> [tour1, tour2, tour3]
-      records: []              // { day: n, dayKey, tier, area?, at }
+      records: []              // { day: n, dayKey, tier, at }
     };
   }
 
@@ -191,8 +191,10 @@ App.store = (function () {
   /* -------------------------------------------- CHECK-IN & DOULEURS --- */
 
   /* Enregistre un palier pour aujourd’hui sur la dernière séance de la zone.
-     Un seul enregistrement par jour : le palier le plus élevé fait foi. */
-  function recordTier(zoneId, tier, area) {
+     Un seul enregistrement par jour, et c’est la dernière réponse qui fait
+     foi : le point du jour étant désormais l’unique façon de se signaler,
+     une erreur de saisie doit pouvoir se corriger sans attendre demain. */
+  function recordTier(zoneId, tier) {
     const s = get();
     const list = s.zones[zoneId].sessions;
     if (!list.length) return null;
@@ -201,13 +203,12 @@ App.store = (function () {
     const dayIndex = U.daysBetween(session.day, key);
     const existing = session.records.find(function (r) { return r.dayKey === key; });
     if (existing) {
-      existing.tier = Math.max(existing.tier, tier);
-      if (area) existing.area = area;
+      existing.tier = tier;
       existing.at = new Date().toISOString();
     } else {
       session.records.push({
         day: dayIndex, dayKey: key, tier: tier,
-        area: area || null, at: new Date().toISOString()
+        at: new Date().toISOString()
       });
     }
     write();

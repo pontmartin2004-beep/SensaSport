@@ -307,10 +307,6 @@ h1, h2, h3, p { margin: 0; }
 .bar-val { font-size: 15px; font-weight: 600; }
 .bar-lbl { font-size: 12px; color: var(--muted); }
 
-.segbar { display: flex; gap: 6px; }
-.seg { flex: 1; height: 8px; border-radius: 4px; background: var(--line); }
-.seg.on { background: var(--green-600); }
-
 .select-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin: 0 -20px; padding-left: 20px; padding-right: 20px; }
 .select-row::-webkit-scrollbar { display: none; }
 .select-row .chip { white-space: nowrap; flex: 0 0 auto; }

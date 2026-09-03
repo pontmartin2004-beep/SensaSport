@@ -5,25 +5,20 @@
   let sel = { zoneId: null, exerciseId: null };
 
   function rhythmCard(zoneId) {
-    const fs = P.floorState(zoneId);
-    const segs = [];
-    for (let i = 0; i < fs.needed; i++) {
-      segs.push('<span class="seg ' + (i < fs.streak ? 'on' : '') + '"></span>');
-    }
+    const r = P.rhythmState(zoneId);
 
-    const text = fs.atMinimum
-      ? 'Ton rythme est à ' + fs.floorDays + ' jours entre deux circuits. ' +
-        'Il remontera à 3 jours si une gêne s’installe — sans que ce soit un recul.'
-      : fs.streak === 0
-        ? 'Ton rythme est de ' + fs.floorDays + ' jours entre deux circuits. ' +
-          'Après ' + fs.needed + ' circuits d’affilée où la gêne se résorbe en 3 jours ou moins, il pourra se resserrer.'
-        : fs.streak + ' circuit' + (fs.streak > 1 ? 's' : '') + ' sur ' + fs.needed +
-          ' où tout s’est résorbé en 3 jours ou moins. Rien à forcer, ça vient tout seul.';
+    const text = r.isReduced
+      ? 'Tu as récupéré sans aucune gêne au bout de ' + r.standard + ' jours, et tu as enchaîné ' +
+        'le jour même : ton point du jour tombe maintenant au bout de ' + r.reduced + ' jours. ' +
+        'Il reviendra à ' + r.standard + ' jours dès qu’une gêne apparaît ou que tu décales ta séance — ' +
+        'ce n’est pas un recul, c’est le rythme normal.'
+      : 'Ton point du jour tombe ' + r.standard + ' jours après chaque circuit. ' +
+        'Si tu réponds « aucune gêne » ce jour-là et que tu fais ta séance dans la foulée, ' +
+        'il passera à ' + r.reduced + ' jours pour le cycle suivant.';
 
     return '<div class="card">' +
       '<div class="eyebrow">Rythme d’entraînement</div>' +
-      '<div class="subtitle" style="margin-top:6px">' + fs.floorDays + ' jours entre deux circuits</div>' +
-      '<div class="segbar" style="margin-top:14px">' + segs.join('') + '</div>' +
+      '<div class="subtitle" style="margin-top:6px">' + r.delay + ' jours entre deux circuits</div>' +
       '<p class="small" style="margin-top:12px">' + U.esc(text) + '</p>' +
     '</div>';
   }
@@ -73,7 +68,7 @@
     }
     const exercise = cfg.exercises.find(function (e) { return e.id === sel.exerciseId; });
 
-    const st = P.sessionStatus(last);
+    const st = P.sessionStatus(last, P.currentDelay(sel.zoneId));
 
     root.innerHTML =
       ui.header('Historique') +
@@ -110,9 +105,8 @@
             '<div style="margin-top:6px">' +
               st.records.map(function (r) {
                 const t = C.TIERS[r.tier - 1];
-                const area = r.area ? (C.BODY_AREAS.find(function (a) { return a.id === r.area; }) || {}).label : null;
                 return '<div class="list-row">' +
-                  '<span class="body">Jour ' + r.day + (area ? ' · ' + U.esc(area) : '') + '</span>' +
+                  '<span class="body">Jour ' + r.day + '</span>' +
                   '<span class="small" style="text-align:right;max-width:55%">' + U.esc(t.label) + '</span>' +
                 '</div>';
               }).join('') +

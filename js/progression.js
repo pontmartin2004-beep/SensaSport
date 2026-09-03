@@ -1,167 +1,170 @@
-/* SensaSport — moteur de rythme d’entraînement.
-   Traduit les règles §7.7, §7.8 et §7.9 du cahier des charges.
-   Chaque zone a son propre cycle : rien n’est partagé entre jambes et core. */
+/* SensaSport — moteur de rythme d'entraînement.
+   Chaque zone a son propre cycle : rien n'est partagé entre jambes et core.
+
+   LE CYCLE
+   --------
+   séance ──► N jours d'attente ──► point du jour ──► selon le palier :
+
+     palier 1  aucune gêne          séance rouverte le jour même
+     palier 2  gêne légère          séance rouverte le jour même, avec un mot
+                                    de prudence avant de commencer
+     palier 3  gêne au quotidien    on attend, et on redemande chaque jour
+                                    jusqu'à redescendre à 2 ou 1
+
+   N vaut 3 par défaut. Il passe à 2 pour le cycle suivant quand deux
+   conditions sont réunies : le point du jour a été répondu « aucune gêne »
+   pile au bout des N jours, et la séance a été faite ce jour-là. Sinon on
+   reste à 3. Rien n'est retiré à personne : 3 jours est le rythme normal,
+   2 jours est un bonus qui se remérite à chaque cycle. */
 window.App = window.App || {};
 
 App.progression = (function () {
   const U = App.util;
   const C = App.config;
 
-  /* ------------------------------------------------ ÉTAT D’UNE SÉANCE ---
-     Une séance ouvre une fenêtre de suivi de 3 jours pleins (§7.7).
-     Elle reste ouverte au-delà tant que le dernier palier connu est un 3. */
+  /* ------------------------------------------------- DÉLAI D'UN CYCLE ---
+     Le délai qui suit une séance dépend du cycle précédent. On rejoue donc
+     l'historique depuis le début : déterministe, aucun état dérivé à stocker. */
 
-  function sessionStatus(session) {
+  function delays(zoneId) {
+    const cfg = C.zone(zoneId);
+    const sessions = App.store.zone(zoneId).sessions;
+    const out = [];
+
+    for (let i = 0; i < sessions.length; i++) {
+      if (i === 0) { out.push(cfg.delayDefault); continue; }
+
+      const prev = sessions[i - 1];
+      const prevDelay = out[i - 1];
+
+      /* Le point du jour attendu, celui qui tombe pile au bout du délai. */
+      const pointDuJour = prev.records.find(function (r) { return r.day === prevDelay; });
+
+      const netAuBonJour = !!pointDuJour && pointDuJour.tier === 1;
+      const seanceEnchainee = sessions[i].day === U.addDays(prev.day, prevDelay);
+
+      out.push(netAuBonJour && seanceEnchainee ? cfg.delayReduced : cfg.delayDefault);
+    }
+    return out;
+  }
+
+  /* Délai qui s'applique après la dernière séance d'une zone. */
+  function currentDelay(zoneId) {
+    const cfg = C.zone(zoneId);
+    const d = delays(zoneId);
+    return d.length ? d[d.length - 1] : cfg.delayDefault;
+  }
+
+  /* ------------------------------------------------ ÉTAT D'UNE SÉANCE --- */
+
+  function sessionStatus(session, delay) {
+    if (delay == null) delay = C.zone(session.zoneId).delayDefault;
+
     const dayIndex = U.daysBetween(session.day, U.today());
     const records = session.records.slice().sort(function (a, b) { return a.day - b.day; });
     const last = records.length ? records[records.length - 1] : null;
 
-    const lastTier = last ? last.tier : null;
-    const blocked = lastTier === 3;                    // palier 3 : on attend (§7.7)
-    const hasTier2 = records.some(function (r) { return r.tier === 2; });
-    const tier3Days = records.filter(function (r) { return r.tier === 3; })
-                             .map(function (r) { return r.day; });
-    const lastTier3Day = tier3Days.length ? Math.max.apply(null, tier3Days) : -1;
+    /* Le premier palier ≤ 2 rouvre la séance suivante et clôt le suivi. */
+    const unlock = records.find(function (r) { return r.day >= delay && r.tier <= 2; }) || null;
+    const resolved = !!unlock;
 
-    /* Circuit validé : plus aucun palier 3 au jour 3 ou après.
-       « 3 jours pile = validé » → un palier 3 au jour 3 n’est PAS résolu en
-       3 jours, un palier 3 au jour 2 suivi d’un retour au calme l’est.
-       Les paliers 2 ne cassent pas la validation : ils sont traités à part
-       par la règle de régression (§7.9). */
-    const validated = lastTier3Day < C.CHECKIN_WINDOW_DAYS && !blocked;
-
-    /* La fenêtre est close quand les 3 jours pleins sont passés et qu’aucun
-       palier 3 ne traîne. Tant qu’elle est ouverte, le circuit ne compte pas
-       encore dans le calcul du plancher. */
-    const windowClosed = dayIndex >= C.CHECKIN_WINDOW_DAYS && !blocked;
-
-    /* Un check-in est dû aujourd’hui si on est dans la fenêtre (ou bloqué)
-       et qu’aucun palier n’a encore été noté aujourd’hui (§7.7 : filet
-       anti-oubli, on interroge chaque jour même sans douleur signalée). */
     const answeredToday = records.some(function (r) { return r.dayKey === U.today(); });
-    const checkinDue = dayIndex >= 1 && !answeredToday &&
-                       (dayIndex <= C.CHECKIN_WINDOW_DAYS || blocked);
+
+    /* On n'interroge qu'au bout du délai, puis chaque jour tant qu'un
+       palier 3 traîne. Jamais avant : plus de questions à J+1 et J+2. */
+    const checkinDue = !resolved && dayIndex >= delay && !answeredToday;
 
     return {
+      delay: delay,
       dayIndex: dayIndex,
       records: records,
-      lastTier: lastTier,
-      blocked: blocked,
-      hasTier2: hasTier2,
-      validated: validated,
-      windowClosed: windowClosed,
-      checkinDue: checkinDue
-    };
-  }
-
-  /* ------------------------------------------------------- PLANCHER ---
-     Rejoué depuis l’historique complet à chaque appel : déterministe,
-     pas d’état dérivé à maintenir en base. */
-
-  function floorState(zoneId) {
-    const zoneCfg = C.zone(zoneId);
-    const sessions = App.store.zone(zoneId).sessions;
-
-    let floor = zoneCfg.floorInitial;   // 3 jours au départ (§7.8)
-    let streak = 0;                     // circuits validés d’affilée
-    let tier2Streak = 0;                // circuits consécutifs avec au moins un palier 2
-    let reducedOnce = false;
-
-    for (let i = 0; i < sessions.length; i++) {
-      const st = sessionStatus(sessions[i]);
-      if (!st.windowClosed) break;      // circuit encore en cours de suivi
-
-      /* --- Régression (§7.9) : ne s’applique que si le plancher a été réduit */
-      const hasTier3 = st.records.some(function (r) { return r.tier === 3; });
-      tier2Streak = st.hasTier2 ? tier2Streak + 1 : 0;
-
-      if (floor < zoneCfg.floorInitial && (hasTier3 || tier2Streak >= 2)) {
-        floor = zoneCfg.floorInitial;   // retour à 3 jours
-        streak = 0;                     // remise à zéro du compteur
-        tier2Streak = 0;
-        continue;
-      }
-
-      /* --- Progression (§7.8) */
-      if (st.validated) {
-        streak += 1;
-        if (floor > zoneCfg.floorReduced && streak >= C.CIRCUITS_TO_REDUCE_FLOOR) {
-          floor = zoneCfg.floorReduced;
-          reducedOnce = true;
-          streak = 0;                   // le palier suivant repart de zéro
-        }
-      } else {
-        streak = 0;                     // un circuit non validé casse la série
-      }
-    }
-
-    return {
-      floorDays: floor,
-      streak: streak,
-      needed: C.CIRCUITS_TO_REDUCE_FLOOR,
-      atMinimum: floor <= zoneCfg.floorReduced,
-      reducedOnce: reducedOnce
+      lastTier: last ? last.tier : null,
+      unlock: unlock,
+      resolved: resolved,
+      gentleWarning: resolved && unlock.tier === 2,
+      /* Le cycle a mérité le délai réduit s'il a été net pile au bon jour.
+         Reste à enchaîner la séance le jour même pour en profiter. */
+      cleanOnTime: resolved && unlock.tier === 1 && unlock.day === delay,
+      answeredToday: answeredToday,
+      checkinDue: checkinDue,
+      awaitingRelief: !resolved && last !== null && last.tier === 3
     };
   }
 
   /* --------------------------------------------- DISPONIBILITÉ SÉANCE --- */
 
   function nextSession(zoneId) {
-    const zoneCfg = C.zone(zoneId);
     const z = App.store.zone(zoneId);
-    const fs = floorState(zoneId);
 
-    if (!z.unlocked) {
-      return { state: 'locked', floor: fs };
-    }
+    if (!z.unlocked) return { state: 'locked' };
     if (!z.sessions.length) {
-      return { state: 'ready', first: true, floor: fs };
+      return { state: 'ready', first: true, delay: C.zone(zoneId).delayDefault };
     }
 
     const last = z.sessions[z.sessions.length - 1];
-    const st = sessionStatus(last);
+    const delay = currentDelay(zoneId);
+    const st = sessionStatus(last, delay);
 
-    if (st.blocked) {
-      return { state: 'waiting', floor: fs, status: st, last: last };
-    }
-
-    const elapsed = U.daysBetween(last.day, U.today());
-    if (elapsed < fs.floorDays) {
+    if (st.resolved) {
       return {
-        state: 'resting',
-        availableOn: U.addDays(last.day, fs.floorDays),
-        daysLeft: fs.floorDays - elapsed,
-        floor: fs, status: st, last: last
+        state: 'ready',
+        first: false,
+        gentleWarning: st.gentleWarning,
+        /* Faire la séance aujourd'hui décrocherait le délai réduit. */
+        bonusToday: st.cleanOnTime && U.today() === U.addDays(last.day, delay),
+        delay: delay, status: st, last: last
       };
     }
 
-    /* Palier 2 signalé pendant la fenêtre : la séance est autorisée, avec un
-       avertissement doux avant de commencer, sans rien changer au protocole. */
+    if (st.dayIndex < delay) {
+      return {
+        state: 'resting',
+        daysLeft: delay - st.dayIndex,
+        availableOn: U.addDays(last.day, delay),
+        delay: delay, status: st, last: last
+      };
+    }
+
+    /* Le délai est écoulé : soit le point du jour attend une réponse,
+       soit la personne a signalé une gêne qui la dérange encore. */
     return {
-      state: 'ready',
-      first: false,
-      gentleWarning: st.hasTier2,
-      floor: fs, status: st, last: last
+      state: st.awaitingRelief ? 'waiting' : 'checkin',
+      delay: delay, status: st, last: last
     };
   }
 
-  /* Toutes les zones qui attendent un check-in aujourd’hui. */
+  /* -------------------------------------------------------- RYTHME --- */
+
+  function rhythmState(zoneId) {
+    const cfg = C.zone(zoneId);
+    const delay = currentDelay(zoneId);
+    return {
+      delay: delay,
+      isReduced: delay <= cfg.delayReduced,
+      standard: cfg.delayDefault,
+      reduced: cfg.delayReduced
+    };
+  }
+
+  /* Toutes les zones qui attendent une réponse aujourd'hui. */
   function pendingCheckins() {
     const out = [];
     C.zoneList.forEach(function (cfg) {
       const z = App.store.zone(cfg.id);
       if (!z.unlocked || !z.sessions.length) return;
       const last = z.sessions[z.sessions.length - 1];
-      const st = sessionStatus(last);
+      const st = sessionStatus(last, currentDelay(cfg.id));
       if (st.checkinDue) out.push({ zoneId: cfg.id, session: last, status: st });
     });
     return out;
   }
 
   return {
+    delays: delays,
+    currentDelay: currentDelay,
     sessionStatus: sessionStatus,
-    floorState: floorState,
     nextSession: nextSession,
+    rhythmState: rhythmState,
     pendingCheckins: pendingCheckins
   };
 })();

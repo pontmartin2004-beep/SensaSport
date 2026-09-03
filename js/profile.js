@@ -13,9 +13,9 @@
       } else if (!cfg.implemented) {
         statusText = 'Circuit en cours de définition';
       } else {
-        const fs = P.floorState(cfg.id);
+        const r = P.rhythmState(cfg.id);
         statusText = z.sessions.length + ' circuit' + (z.sessions.length > 1 ? 's' : '') +
-                     ' · ' + fs.floorDays + ' jours de rythme';
+                     ' · ' + r.delay + ' jours de rythme';
       }
       return '<div class="list-row">' +
         '<span class="body">' + U.esc(cfg.name) + '</span>' +
@@ -46,8 +46,8 @@
              (s.settings.checkinReminder ? '' : 'display:none') + '">' +
           '<label class="label" for="pHour">Vers quelle heure ?</label>' +
           '<select class="field" id="pHour">' +
-            Array.from({ length: 15 }, function (_, i) {
-              const h = i + 8;
+            Array.from({ length: 18 }, function (_, i) {
+              const h = i + 5;
               return '<option value="' + h + '"' + (h === s.settings.reminderHour ? ' selected' : '') +
                      '>' + h + 'h</option>';
             }).join('') +
