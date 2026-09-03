@@ -9,6 +9,7 @@
       '[data-history],[data-ready],[data-stop],[data-replay],[data-key],' +
       '[data-quit],[data-quit-confirm],[data-quit-cancel],[data-sheet-close],' +
       '[data-resume],[data-finish-pending],[data-discard-pending],' +
+      '[data-bonus-start],[data-bonus-quit],' +
       '[data-hzone],[data-hex],#finishBtn');
     if (!t) return;
 
@@ -35,6 +36,8 @@
     if (t.hasAttribute('data-quit'))    return App.session.handleQuit();
     if (t.hasAttribute('data-quit-confirm')) return App.session.handleQuitConfirm();
 
+    if (t.hasAttribute('data-bonus-start'))     return App.bonus.start(a('data-bonus-start'));
+    if (t.hasAttribute('data-bonus-quit'))      return App.bonus.quit();
     if (t.hasAttribute('data-resume'))          return App.session.resume();
     if (t.hasAttribute('data-finish-pending'))  return App.session.finishInterrupted();
     if (t.hasAttribute('data-discard-pending')) return App.session.discardInterrupted();

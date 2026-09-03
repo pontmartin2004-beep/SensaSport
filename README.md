@@ -50,12 +50,13 @@ js/
   config.js         circuits, textes, constantes — tout ce qui vient du CDC
   util.js           dates en jours calendaires locaux, aides DOM
   store.js          état persistant, séances, déverrouillage des zones
-  progression.js    moteur de rythme : planchers, validation, régression
+  progression.js    moteur de rythme : délais, point du jour, bonus mérité
   anim.js           silhouettes animées (SVG + SMIL, aucune image)
   ui.js             routeur, onglets, feuilles, icônes
   onboarding.js     bienvenue, choix de zone
-  home.js           accueil, onglet Séance, zone non spécifiée
+  home.js           accueil et onglet Séance
   session.js        déroulé du circuit (machine à états)
+  bonus.js          séance de gainage, hors de tout cycle
   checkin.js        point du jour à 3 paliers
   history.js        répétitions par tour, progression du rythme
   profile.js        prénom, rappel, philosophie, aide
@@ -86,6 +87,9 @@ délais de récupération, paliers, textes de philosophie.
 - Moteur de rythme : 3 jours par défaut, 2 jours mérités quand le point du jour
   est « aucune gêne » pile au bon jour et que la séance est enchaînée le jour même
 - Historique : répétitions par tour, ressenti des jours suivants, rythme
+- Séance bonus de gainage, activable à tout moment depuis l’onglet Séance :
+  5 séries au choix (30 s / repos 15 s, ou 1 min / repos 30 s), sans effet
+  sur les cycles des circuits
 - Profil : prénom, rappel, zones, philosophie, aide, réinitialisation
 - Reprise de séance : le circuit en cours est écrit sur le disque à chaque
   étape et à chaque saisie ; si l’app se ferme en route, elle propose de
@@ -94,14 +98,14 @@ délais de récupération, paliers, textes de philosophie.
 
 ## Ce qui ne l'est pas
 
-- Échauffement, détection de stagnation, gainage statique, course et natation.
+- Échauffement, détection de stagnation, course et natation.
 
 ---
 
 ## Points d'interprétation
 
-Quatre endroits où le cahier des charges laissait le choix ouvert. Ils sont
-isolés et faciles à changer.
+Cinq endroits où le cahier des charges laissait le choix ouvert, ou bien où
+l’usage a demandé de s’en écarter. Ils sont isolés et faciles à changer.
 
 **Structure du circuit ceinture abdominale** (§8) — laissée ouverte par le cahier
 des charges. Arrêtée à : 3 tours, ordre du §8 (abdos classiques → relevé de
@@ -124,6 +128,15 @@ qui rend la régression du §7.9 sans objet.
 haute, et **aucun décompte affiché pendant l'effort** (pas de pression visuelle).
 La séance se referme en douceur à l'échéance.
 → `js/config.js`, `globalCapSeconds`.
+
+**Durée imposée du gainage** — la séance bonus est le seul endroit de l’app où
+une durée est fixée d’avance, ce qui contredit « jamais un chiffre imposé »
+(§2). Assumé : le gainage chauffe dès la première seconde, le repère d’arrêt
+n’est donc pas la brûlure mais la perte de posture. Le repère sensoriel porte
+sur le bassin qui s’affaisse, « Je m’arrête ici » reste affiché en permanence,
+et s’arrêter à la troisième série est enregistré comme « séance ajustée »,
+exactement comme un circuit écourté.
+→ `js/config.js`, constante `BONUS`.
 
 **Transition après saisie** (§7.6) — « dès que la personne saisit une valeur, la
 transition se fait immédiatement ». Pris au pied de la lettre, taper « 1 » de

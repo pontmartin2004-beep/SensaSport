@@ -382,3 +382,9 @@ h1, h2, h3, p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Minuteur de gainage : plus grand que celui des récupérations,
+   c'est l'élément que l'on fixe pendant tout le maintien. */
+.ring-wrap.large,
+.ring-wrap.large svg { width: 196px; height: 196px; }
+.ring-wrap.large .ring-label { font-size: 44px; }

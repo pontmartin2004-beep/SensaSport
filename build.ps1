@@ -14,7 +14,7 @@ $root = $PSScriptRoot
 $scripts = @(
   'js/config.js', 'js/util.js', 'js/store.js', 'js/progression.js',
   'js/anim.js', 'js/ui.js', 'js/notify.js', 'js/onboarding.js',
-  'js/home.js', 'js/session.js', 'js/checkin.js', 'js/history.js',
+  'js/home.js', 'js/session.js', 'js/bonus.js', 'js/checkin.js', 'js/history.js',
   'js/profile.js', 'js/app.js'
 )
 

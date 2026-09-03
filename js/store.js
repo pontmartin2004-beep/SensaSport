@@ -31,6 +31,9 @@ App.store = (function () {
       /* Séance commencée mais pas terminée. Réécrite à chaque étape du
          circuit pour que rien ne soit perdu si l’app est fermée en route. */
       activeRun: null,
+      /* Séances de gainage : hors de tout cycle, donc stockées à part
+         des zones et sans effet sur leurs délais. */
+      bonusSessions: [],
       settings: {
         checkinReminder: true, // le rappel peut être coupé ; son heure est fixe
         notifiedOn: {}         // dayKey -> true, pour ne notifier qu’une fois par jour
@@ -193,6 +196,17 @@ App.store = (function () {
       .catch(function () { return { supported: true, persisted: false }; });
   }
 
+  /* ------------------------------------------------ SÉANCE BONUS --- */
+
+  function pushBonus(record) {
+    save(function (s) {
+      if (!s.bonusSessions) s.bonusSessions = [];
+      s.bonusSessions.push(record);
+    });
+  }
+
+  function bonusSessions() { return get().bonusSessions || []; }
+
   function saveRun(snapshot) { save(function (s) { s.activeRun = snapshot; }); }
   function clearRun() { save(function (s) { s.activeRun = null; }); }
   function getRun() { return get().activeRun || null; }
@@ -238,6 +252,7 @@ App.store = (function () {
     newSession: newSession, pushSession: pushSession, lastSession: lastSession,
     markDemoSeen: markDemoSeen,
     saveRun: saveRun, clearRun: clearRun, getRun: getRun,
+    pushBonus: pushBonus, bonusSessions: bonusSessions,
     requestPersistence: requestPersistence, persistenceStatus: persistenceStatus,
     recordTier: recordTier,
     reset: reset,

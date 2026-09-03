@@ -131,6 +131,51 @@ App.config = (function () {
     ]
   };
 
+  /* ------------------------------------------------ SÉANCE BONUS ---
+     Gainage, en dehors de tout cycle : ni point du jour, ni délai, ni
+     effet sur les circuits. Se lance quand on veut, depuis l'onglet Séance.
+
+     C'est le seul endroit de l'app où une durée est imposée. Le gainage
+     s'y prête mal autrement : ça chauffe dès la première seconde, donc le
+     repère d'arrêt n'est pas la sensation de brûlure mais la perte de
+     posture. Le bouton « Je m'arrête ici » reste disponible en permanence. */
+
+  const BONUS = {
+    id: 'plank',
+    name: 'Gainage',
+
+    exercise: {
+      id: 'plank',
+      name: 'Planche',
+      anim: 'plank',
+      posture: 'Sur les avant-bras, coudes sous les épaules, corps aligné de la tête aux talons.',
+      sensory: 'Dos droit, bassin ni creusé ni relevé. Si ton bassin s’affaisse, arrête-toi.'
+    },
+
+    /* Décrits par leur contenu, jamais par un niveau collé à la personne. */
+    formats: [
+      {
+        id: 'court',
+        label: '30 secondes, 5 fois',
+        detail: 'Départ toutes les 45 secondes',
+        sets: 5, hold: 30, rest: 15
+      },
+      {
+        id: 'long',
+        label: '1 minute, 5 fois',
+        detail: 'Départ toutes les 90 secondes',
+        sets: 5, hold: 60, rest: 30
+      }
+    ],
+
+    format: function (id) {
+      return this.formats.find(function (f) { return f.id === id; }) || this.formats[0];
+    },
+
+    /* Durée totale d'un format, repos compris. */
+    totalSeconds: function (f) { return f.sets * f.hold + (f.sets - 1) * f.rest; }
+  };
+
   /* Les 3 paliers du point du jour */
   const TIERS = [
     { tier: 1, label: 'Aucune gêne',
@@ -153,6 +198,7 @@ App.config = (function () {
     zoneList: [LEGS, CORE],
     zone: function (id) { return this.zones[id]; },
     COUNT_REMINDER: COUNT_REMINDER,
+    BONUS: BONUS,
     TIERS: TIERS,
     PHILOSOPHY: PHILOSOPHY,
     /* Heure du rappel, identique pour tout le monde : tôt convient aux

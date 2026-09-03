@@ -73,6 +73,19 @@ App.anim = (function () {
       ]
     },
 
+    /* --------------------------------------- PLANCHE VENTRALE (profil)
+       Maintien statique : l'animation ne montre pas un mouvement mais la
+       position tenue, avec le léger va-et-vient de la respiration. */
+    plank: {
+      duration: 4,
+      head: { from: [24, 117], to: [24, 119], r: 11 },
+      lines: [
+        { name: 'bras',  from: '36,123 34,155 16,155',        to: '36,125 34,155 16,155' },
+        { name: 'corps', from: '36,123 72,133 92,141 110,149', to: '36,125 72,136 92,143 110,150' },
+        { name: 'pied',  from: '110,149 117,155',             to: '110,150 117,155' }
+      ]
+    },
+
     /* ----------------------------------- EXTENSION LOMBAIRE (profil) */
     superman: {
       duration: 3.0,

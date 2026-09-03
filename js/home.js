@@ -166,6 +166,8 @@
         (unlocked.length < C.zoneList.length ? lockedCard() : '') +
       '</div>' +
       '<div class="divider"></div>' +
+      App.bonus.card() +
+      '<div class="divider"></div>' +
       '<div class="card quiet">' +
         '<div class="subtitle" style="font-size:16px">Ce qui ne change jamais</div>' +
         '<ul class="body" style="margin:10px 0 0;padding-left:18px">' +

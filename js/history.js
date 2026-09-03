@@ -23,6 +23,36 @@
     '</div>';
   }
 
+  /* Section à part : le gainage ne suit aucun cycle, il n'a donc rien à
+     faire au milieu des circuits et de leur rythme. */
+  function bonusSection() {
+    const list = App.store.bonusSessions();
+    if (!list.length) return '';
+
+    const recentes = list.slice(-8).reverse();
+    const totalSec = list.reduce(function (n, b) { return n + b.sets * b.hold; }, 0);
+
+    return '<div class="divider"></div>' +
+      '<div class="eyebrow">Gainage</div>' +
+      '<div class="card" style="margin-top:12px">' +
+        '<div style="display:flex;gap:24px">' +
+          '<div><div class="title">' + list.length + '</div><div class="small">séance' +
+            (list.length > 1 ? 's' : '') + '</div></div>' +
+          '<div><div class="title">' + U.clockText(totalSec) + '</div>' +
+            '<div class="small">au total</div></div>' +
+        '</div>' +
+        '<div style="margin-top:14px">' +
+          recentes.map(function (b) {
+            return '<div class="list-row">' +
+              '<span class="body">' + U.esc(U.formatDayShort(b.day)) + '</span>' +
+              '<span class="small">' + b.sets + '/' + b.planned + ' × ' + b.hold + ' s' +
+              (b.completed ? '' : ' · séance ajustée') + '</span>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+  }
+
   function barChart(session, exercise, rounds) {
     const series = (session.reps[exercise.id] || []);
     const max = Math.max.apply(null, series.concat([1]).map(function (v) { return v || 0; }));
@@ -49,7 +79,8 @@
         '<div class="card quiet" style="margin-top:24px">' +
           '<p class="body">Ton historique se remplira après ton premier circuit. ' +
           'Tu y verras tes répétitions par tour, et l’évolution de ton rythme.</p>' +
-        '</div>';
+        '</div>' +
+        bonusSection();
       return;
     }
 
@@ -130,7 +161,9 @@
               '</div>';
             }).join('') +
           '</div>'
-        : '');
+        : '') +
+
+      bonusSection();
   });
 
   App.history = {
