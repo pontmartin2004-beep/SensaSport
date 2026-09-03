@@ -139,6 +139,23 @@ Si le rappel fermé devient important, il faudra passer à une app native
 
 ---
 
+## Mise à jour du code déployé
+
+GitHub Pages sert les fichiers avec un `max-age` de 10 minutes. Sans précaution,
+un navigateur pouvait donc exécuter, juste après un déploiement, un mélange de
+fichiers anciens et récents — bien plus gênant qu’un simple retard, puisque des
+modules incompatibles se retrouvent chargés ensemble.
+
+Le service worker contourne le problème : ses requêtes sont émises avec
+`cache: 'no-cache'`, ce qui force une revalidation auprès du serveur, à
+l’installation comme à l’usage. Le serveur répond 304 quand rien n’a changé, donc
+le coût est négligeable, et le mode hors ligne continue de passer par le cache.
+
+`CACHE` dans `sw.js` doit être incrémenté quand la stratégie de cache change,
+pour que l’ancien cache soit purgé à l’activation.
+
+---
+
 ## Mettre en ligne (GitHub Pages)
 
 Le dépôt git est déjà initialisé et le premier commit est fait. Il reste trois
