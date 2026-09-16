@@ -502,6 +502,8 @@
   ui.register('session-done', function (root, params) {
     const cfg = C.zone(params.zoneId);
     const s = params.session;
+    const delai = App.progression.currentDelay(params.zoneId);
+    const pointDuJour = U.addDays(s.day, delai);
     let total = 0;
     Object.keys(s.reps).forEach(function (k) {
       s.reps[k].forEach(function (v) { total += (v || 0); });
@@ -533,12 +535,15 @@
       '<div class="card accent" style="margin-top:14px">' +
         '<div class="subtitle" style="font-size:16px">Et maintenant ?</div>' +
         '<p class="body" style="margin-top:8px;color:var(--green-900)">' +
-          'À partir de demain, l’appli te demandera chaque jour comment tu te sens. ' +
-          'Si une gêne apparaît avant, tu peux la signaler à tout moment depuis l’accueil.' +
+          'Ton corps récupère. Dans ' + delai + ' jours, ' + U.esc(U.formatDay(pointDuJour)) +
+          ', l’app te demandera comment tu te sens — et ta séance suivante s’ouvrira.' +
         '</p>' +
+        '<div style="margin-top:14px">' +
+          App.calendar.button(params.zoneId, pointDuJour, 'Me le rappeler dans mon agenda', 'btn-primary') +
+        '</div>' +
       '</div>' +
       '<div style="margin-top:22px" class="stack">' +
-        '<button class="btn btn-primary" data-go="home">Retour à l’accueil</button>' +
+        '<button class="btn btn-ghost" data-go="home">Retour à l’accueil</button>' +
         '<button class="btn btn-quiet" data-history="' + params.zoneId + '">Voir mes répétitions</button>' +
       '</div>';
   });

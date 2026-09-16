@@ -34,10 +34,7 @@ App.store = (function () {
       /* Séances de gainage : hors de tout cycle, donc stockées à part
          des zones et sans effet sur leurs délais. */
       bonusSessions: [],
-      settings: {
-        checkinReminder: true, // le rappel peut être coupé ; son heure est fixe
-        notifiedOn: {}         // dayKey -> true, pour ne notifier qu’une fois par jour
-      }
+      settings: {}
     };
   }
 
@@ -71,12 +68,12 @@ App.store = (function () {
     }
     for (const k in fresh.settings) if (!(k in state.settings)) state.settings[k] = fresh.settings[k];
 
-    /* L’heure du rappel a été réglable un temps, puis fixée pour tout le
-       monde. On efface les réglages devenus sans objet plutôt que de les
-       laisser traîner dans l’état. */
-    if ('reminderHour' in state.settings || 'hourMigrated' in state.settings) {
-      delete state.settings.reminderHour;
-      delete state.settings.hourMigrated;
+    /* Réglages devenus sans objet : l’heure du rappel (fixée pour tous),
+       puis la notification elle-même, remplacée par un rappel d’agenda.
+       On les efface plutôt que de les laisser traîner dans l’état. */
+    const obsoletes = ['reminderHour', 'hourMigrated', 'checkinReminder', 'notifiedOn'];
+    if (obsoletes.some(function (k) { return k in state.settings; })) {
+      obsoletes.forEach(function (k) { delete state.settings[k]; });
       write();
     }
 

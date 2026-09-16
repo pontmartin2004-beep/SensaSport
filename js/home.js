@@ -43,8 +43,10 @@
                  (d === 1 ? 'demain' : 'dans ' + d + ' jours') + '.</p>' +
                  '<p class="small" style="margin-top:8px">Rythme actuel : ' + next.delay +
                  ' jours entre deux circuits.</p>';
-      ctaHtml = '<button class="btn btn-ghost" data-history="' + cfg.id + '" style="margin-top:18px">' +
-                'Revoir la dernière séance</button>';
+      ctaHtml = '<div class="stack" style="margin-top:18px">' +
+                  App.calendar.button(cfg.id, next.availableOn, 'Me rappeler le point du jour') +
+                  '<button class="btn btn-quiet" data-history="' + cfg.id + '">Revoir la dernière séance</button>' +
+                '</div>';
 
     } else if (next.state === 'checkin') {
       bodyHtml = '<p class="body">Les ' + next.delay + ' jours de récupération sont passés. ' +

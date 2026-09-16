@@ -10,10 +10,25 @@
       '[data-quit],[data-quit-confirm],[data-quit-cancel],[data-sheet-close],' +
       '[data-resume],[data-finish-pending],[data-discard-pending],' +
       '[data-bonus-start],[data-bonus-quit],' +
+      '[data-remind],[data-cal-ics],[data-cal-google],' +
       '[data-hzone],[data-hex],#finishBtn');
     if (!t) return;
 
     const a = function (n) { return t.getAttribute(n); };
+
+    /* Rappel d'agenda. Le lien Google navigue nativement : on referme la
+       feuille juste après, sinon le lien quitterait le document avant de partir. */
+    if (t.hasAttribute('data-cal-google')) { setTimeout(ui.closeSheet, 300); return; }
+    if (t.hasAttribute('data-remind')) {
+      const p = a('data-remind').split('|');
+      return App.calendar.offer(p[0], p[1]);
+    }
+    if (t.hasAttribute('data-cal-ics')) {
+      const p = a('data-cal-ics').split('|');
+      App.calendar.downloadIcs(p[0], p[1]);
+      ui.closeSheet();
+      return ui.toast('Ouvre le fichier pour l’ajouter à ton agenda.');
+    }
 
     /* Feuille : on ferme d'abord, une éventuelle navigation suit. */
     if (t.hasAttribute('data-sheet-close') || t.hasAttribute('data-quit-cancel')) {
@@ -78,7 +93,17 @@
       ui.toast('Stockage local indisponible : cette session ne sera pas conservée.');
     }
 
-    App.notify.init();
+    /* L'app restée ouverte en arrière-plan peut être rouverte des jours plus
+       tard — typiquement depuis le rappel d'agenda. Si le jour a changé, on
+       rafraîchit l'écran pour ne pas afficher « récupération en cours » le
+       jour même où le point du jour est attendu. Jamais pendant une séance. */
+    let jourAffiche = U.today();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden || U.today() === jourAffiche) return;
+      jourAffiche = U.today();
+      App.store.refreshUnlocks();
+      if (!App.session.isRunning() && !App.bonus.isRunning()) ui.refresh();
+    });
 
     /* Demande au navigateur de ne pas évincer les données d'entraînement. */
     App.store.requestPersistence();

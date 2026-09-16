@@ -59,8 +59,8 @@ js/
   bonus.js          séance de gainage, hors de tout cycle
   checkin.js        point du jour à 3 paliers
   history.js        répétitions par tour, progression du rythme
-  profile.js        prénom, rappel, philosophie, aide
-  notify.js         rappel quotidien doux, à heure fixe
+  profile.js        prénom, zones, données, philosophie, aide
+  calendar.js       rappel du point du jour dans l’agenda du téléphone
   app.js            amorçage et délégation d'évènements
 ```
 
@@ -90,7 +90,9 @@ délais de récupération, paliers, textes de philosophie.
 - Séance bonus de gainage, activable à tout moment depuis l’onglet Séance :
   5 séries au choix (30 s / repos 15 s, ou 1 min / repos 30 s), sans effet
   sur les cycles des circuits
-- Profil : prénom, rappel, zones, philosophie, aide, réinitialisation
+- Profil : prénom, zones, données, philosophie, aide, réinitialisation
+- Rappel du point du jour ajouté à l’agenda du téléphone (Google Agenda ou .ics),
+  fiable app fermée — l’app elle-même n’envoie aucune notification
 - Reprise de séance : le circuit en cours est écrit sur le disque à chaque
   étape et à chaque saisie ; si l’app se ferme en route, elle propose de
   reprendre, de clôturer la séance en gardant les répétitions, ou de l’effacer
@@ -147,17 +149,30 @@ n'est toujours pas zappable.
 
 ---
 
-## Notifications
+## Rappel du point du jour
 
-Sans serveur, une PWA ne peut pas pousser de notification quand elle est fermée.
-Le rappel quotidien part si l’app a été ouverte dans la journée et que
-l’autorisation a été donnée. Son heure est la même pour tout le monde —
-`REMINDER_HOUR` dans `js/config.js` — et seule son activation se règle
-dans Profil. Le vrai filet reste la carte
-**« Le point du jour »** en haut de l'accueil, qui ne dépend d'aucune permission.
+**L’app n’envoie pas de notification.** Une PWA sans serveur ne peut pas en
+programmer : tout minuteur vit dans la page et disparaît quand l’app est fermée,
+et l’API qui devait le permettre a été abandonnée par Chrome. Une première
+version reposait sur un `setTimeout` : elle ne se déclenchait jamais en pratique
+(autorisation jamais demandée, constructeur refusé par Chrome Android, et surtout
+app fermée à l’heure dite). Elle a été retirée plutôt que corrigée, pour ne pas
+demander une autorisation qui n’aurait servi à rien.
 
-Si le rappel fermé devient important, il faudra passer à une app native
-(Expo / React Native) ou ajouter un petit serveur de push.
+Le rappel passe par **l’agenda du téléphone**, qui notifie de façon fiable,
+app fermée et hors ligne. En fin de séance, sur la carte « récupération en
+cours » et après un palier 3, un bouton ajoute l’événement au bon jour, à
+`REMINDER_HOUR` (6h) : via Google Agenda, ou via un fichier `.ics` pour Apple,
+Samsung, Outlook et les autres. L’app ne transmet rien elle-même ; seuls le
+titre et la date de l’événement vont dans l’agenda choisi.
+
+Rouvrir l’app depuis le rappel un autre jour rafraîchit l’écran, pour ne pas
+afficher « récupération en cours » le jour où le point du jour est attendu.
+→ `js/calendar.js`
+
+Pour des notifications automatiques sans geste, il faudrait un serveur de push
+(au prix de la promesse « rien n’est envoyé ») ou une app native avec
+notifications locales.
 
 ---
 

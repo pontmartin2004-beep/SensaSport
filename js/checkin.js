@@ -41,8 +41,14 @@
       '<h2 class="subtitle">' + U.esc(title) + '</h2>' +
       '<p class="body" style="margin-top:10px">' + U.esc(text) + '</p>' +
       '<p class="small" style="margin-top:14px">' + U.esc(cfg.name) + '</p>' +
-      '<button class="btn btn-primary" style="margin-top:22px" data-sheet-close="1" ' +
-      'data-go="home">Compris</button>'
+      '<div class="stack" style="margin-top:22px">' +
+        /* Palier 3 : on redemande demain, autant que l'agenda le rappelle. */
+        (tier === 3
+          ? App.calendar.button(zoneId, U.addDays(U.today(), 1), 'Me le rappeler demain', 'btn-primary')
+          : '') +
+        '<button class="btn ' + (tier === 3 ? 'btn-quiet' : 'btn-primary') + '" data-sheet-close="1" ' +
+        'data-go="home">Compris</button>' +
+      '</div>'
     );
   }
 

@@ -32,21 +32,12 @@
       '</div>' +
 
       '<div class="card">' +
-        '<div class="switch-row">' +
-          '<div>' +
-            '<div class="subtitle" style="font-size:16px">Rappel du point quotidien</div>' +
-            '<div class="small" style="margin-top:4px">Vers ' + C.REMINDER_HOUR +
-              'h, uniquement les jours où le point du jour t’attend.</div>' +
-          '</div>' +
-          '<label class="switch">' +
-            '<input type="checkbox" id="pReminder"' + (s.settings.checkinReminder ? ' checked' : '') + '>' +
-            '<span class="track"></span><span class="knob"></span>' +
-          '</label>' +
-        '</div>' +
-        '<div id="reminderDetail" style="margin-top:14px;' +
-             (s.settings.checkinReminder ? '' : 'display:none') + '">' +
-          '<p class="muted-note" id="notifState"></p>' +
-        '</div>' +
+        '<div class="subtitle" style="font-size:16px">Rappel du point du jour</div>' +
+        '<p class="small" style="margin-top:6px">' +
+          'L’app ne peut pas t’envoyer de notification quand elle est fermée. ' +
+          'À la fin de chaque séance, ajoute le point du jour à ton agenda : ' +
+          'c’est lui qui te préviendra, vers ' + C.REMINDER_HOUR + 'h.' +
+        '</p>' +
       '</div>' +
 
       '<div class="card">' +
@@ -84,9 +75,10 @@
             'mais la tendance sur plusieurs séances.</p>' +
           '</div>' +
           '<div>' +
-            '<div class="subtitle" style="font-size:15.5px">J’ai raté un jour de suivi</div>' +
-            '<p class="small" style="margin-top:4px">Ce n’est pas grave. Sans signalement pendant trois jours ' +
-            'pleins, la séance suivante est proposée d’elle-même.</p>' +
+            '<div class="subtitle" style="font-size:15.5px">J’ai oublié le point du jour</div>' +
+            '<p class="small" style="margin-top:4px">Ce n’est pas grave : il t’attend sur l’accueil, et ta ' +
+            'séance s’ouvre dès que tu réponds. Ton rythme reste simplement à trois jours pour ce cycle. ' +
+            'Pour ne plus l’oublier, ajoute-le à ton agenda en fin de séance.</p>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -103,17 +95,6 @@
       ui.toast('Prénom mis à jour');
     });
 
-    const rem = U.$('#pReminder', root);
-    const detail = U.$('#reminderDetail', root);
-    rem.addEventListener('change', function () {
-      App.store.save(function (st) { st.settings.checkinReminder = rem.checked; });
-      detail.style.display = rem.checked ? '' : 'none';
-      if (rem.checked) App.notify.request();
-      App.notify.schedule();
-    });
-
-    const notifState = U.$('#notifState', root);
-    if (notifState) notifState.textContent = App.notify.statusText();
 
     const storageState = U.$('#pStorage', root);
     App.store.persistenceStatus().then(function (st) {
